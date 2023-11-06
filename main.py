@@ -5,7 +5,7 @@ import base64
 import hashlib
 import asyncio 
 import uvicorn
-
+import qrcode
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header,Request,File, UploadFile,status,Form
 from fastapi.responses import StreamingResponse,FileResponse,Response
@@ -125,6 +125,41 @@ async def updatemodel(filename=Form(...),file: UploadFile = File(...)):
             return {"message":"model does not exists."}
             
 
+    except Exception as ex:
+        return {"error":f"{type(ex)},{ex}"}
+@app.post('/createqrcode')# GET # allow all origins all methods.
+async def createqrcode(data : JSONStructure = None):
+    try:
+        data = dict(data)
+        if data.get("help"):
+            return {"url":"<url>","version":3,"box_size":10,"border":10}
+        url = data["url"]
+        version = data.get("version") if data.get("version") else 3
+        box_size = data.get("box_size") if data.get("box_size") else 5
+        border = data.get("border") if data.get("border") else 10
+        # Create a QR code object with a larger size and higher error correction
+        qr = qrcode.QRCode(version=version, box_size=box_size, border=border, error_correction=qrcode.constants.ERROR_CORRECT_H)
+
+        # Define the data to be encoded in the QR code
+        data = url
+
+        # Add the data to the QR code object
+        qr.add_data(data)
+
+        # Make the QR code
+        qr.make(fit=True)
+
+        # Create an image from the QR code with a black fill color and white background
+        img = qr.make_image(fill_color="black", back_color="white")
+        imgstream = io.BytesIO()
+        # Save the QR code image    
+        img.save(imgstream)
+        imgstream.seek(0)
+        imgbytes = imgstream.read()
+
+        return Response(imgbytes,
+                        headers={'Content-Disposition': f'attachment; filename="new_qr_code.png"'},
+                        status_code=status.HTTP_200_OK)
     except Exception as ex:
         return {"error":f"{type(ex)},{ex}"}
 
