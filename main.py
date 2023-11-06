@@ -132,7 +132,7 @@ async def createqrcode(data : JSONStructure = None):
     try:
         data = dict(data)
         if data.get("help"):
-            return {"url":"<url>","version":3,"box_size":10,"border":10}
+            return {"url":"<url>","version":3,"box_size":10,"border":10,"usebase64":"true"}
         url = data["url"]
         version = data.get("version") if data.get("version") else 3
         box_size = data.get("box_size") if data.get("box_size") else 5
@@ -141,10 +141,10 @@ async def createqrcode(data : JSONStructure = None):
         qr = qrcode.QRCode(version=version, box_size=box_size, border=border, error_correction=qrcode.constants.ERROR_CORRECT_H)
 
         # Define the data to be encoded in the QR code
-        data = url
+        
 
         # Add the data to the QR code object
-        qr.add_data(data)
+        qr.add_data(url)
 
         # Make the QR code
         qr.make(fit=True)
@@ -156,8 +156,12 @@ async def createqrcode(data : JSONStructure = None):
         img.save(imgstream)
         imgstream.seek(0)
         imgbytes = imgstream.read()
-
-        return Response(imgbytes,
+        if data.get("usebase64"):
+            imgbas64 = "data:image/png;base64,"+ base64.b64encode(imgbytes).decode()
+            return {"qrcode":imgbas64}
+             
+        else:
+            return Response(imgbytes,
                         headers={'Content-Disposition': f'attachment; filename="new_qr_code.png"'},
                         status_code=status.HTTP_200_OK)
     except Exception as ex:
