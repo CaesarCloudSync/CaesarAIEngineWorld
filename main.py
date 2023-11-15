@@ -46,7 +46,7 @@ async def index():
 @app.post('/postmodel')# GET # allow all origins all methods.
 async def postmodel(file: UploadFile = File(...)):
     try:
-        return caesaraimodelcrud.postmodel("caesaraiworldmodels",file)
+        return await caesaraimodelcrud.postmodel("caesaraiworldmodels",file)
     except Exception as ex:
         return {"error":f"{type(ex)},{ex}"}
 
@@ -79,7 +79,7 @@ async def deletemodel(filename):
 async def updatemodel(filename=Form(...),file: UploadFile = File(...)):
     try:
 
-        return caesaraimodelcrud.updatemodel("caesaraiworldmodels",filename,file)    
+        return await caesaraimodelcrud.updatemodel("caesaraiworldmodels",filename,file)    
 
     except Exception as ex:
         return {"error":f"{type(ex)},{ex}"}
@@ -88,7 +88,7 @@ async def updatemodel(filename=Form(...),file: UploadFile = File(...)):
 async def postarmodel(file: UploadFile = File(...)):
     try:
         if "obj" in file.filename:
-            return caesaraimodelcrud.postmodel("caesaraiarmodels",file)
+            return await caesaraimodelcrud.postmodel("caesaraiarmodels",file)
         else:
              return {"message":"file needs to be a .obj file."}
     except Exception as ex:
@@ -123,7 +123,7 @@ async def deletearmodel(filename):
 async def updatearmodel(filename=Form(...),file: UploadFile = File(...)):
     try:
 
-        return caesaraimodelcrud.updatemodel("caesaraiarmodels",filename,file)    
+        return await caesaraimodelcrud.updatemodel("caesaraiarmodels",filename,file)    
 
     except Exception as ex:
         return {"error":f"{type(ex)},{ex}"}
