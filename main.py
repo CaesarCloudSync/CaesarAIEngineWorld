@@ -16,6 +16,7 @@ from fastapi.responses import StreamingResponse
 from fastapi import WebSocket,WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from CaesarJWT.caesarjwt import CaesarJWT
+from CaesarAIModelCRUD.caesaraimodelcrud import CaesarAIModelCRUD
 from CaesarSQLDB.caesar_create_tables import CaesarCreateTables
 load_dotenv(".env")
 app = FastAPI()
@@ -29,7 +30,7 @@ app.add_middleware(
 
 
 caesarcrud = CaesarCRUD()
-
+caesaraimodelcrud = CaesarAIModelCRUD(caesarcrud)
 maturityjwt = CaesarJWT(caesarcrud)
 caesarcreatetables = CaesarCreateTables()
 caesarcreatetables.create(caesarcrud)
@@ -45,20 +46,7 @@ async def index():
 @app.post('/postmodel')# GET # allow all origins all methods.
 async def postmodel(file: UploadFile = File(...)):
     try:
-        filename = file.filename
-        modelbytes = await file.read()
-        modelhex = modelbytes.hex().encode()
-        condition = f"filename = '{filename}'"
-        model_exists = caesarcrud.check_exists(("*"),table,condition)
-        if model_exists:
-            return {"message":"model already exists."}
-        else:
-            res = caesarcrud.post_data(("filename",),(filename,),table)
-            res = caesarcrud.update_blob("model",modelhex,table,condition=condition)
-            if res:
-                return {"message":"model was posted."}
-            else:
-                return {"error":"posting error"}
+        return caesaraimodelcrud.postmodel("caesaraiworldmodels",file)
     except Exception as ex:
         return {"error":f"{type(ex)},{ex}"}
 
@@ -66,24 +54,14 @@ async def postmodel(file: UploadFile = File(...)):
 @app.get('/getmodel')# GET # allow all origins all methods.
 async def getmodel(filename):
         try:
-            condition = f"filename = '{filename}'"
-            model_exists = caesarcrud.check_exists(("*"),table,condition)
-            if model_exists:
-                model_json = caesarcrud.get_data(("filename","model"),table,condition=condition)[0]
-                modelfilename = model_json["filename"]
-                modelhex = model_json["model"].decode()
-                model = bytes.fromhex(modelhex)
-                return Response(model,
-                                headers={'Content-Disposition': f'attachment; filename="{modelfilename}"'},
-                                status_code=status.HTTP_200_OK)
-            else:
-                return {"error":"model doesn't exist."}
+            return caesaraimodelcrud.getmodel("caesaraiworldmodels",filename)
+  
         except Exception as ex:
             return {"error":f"{type(ex)},{ex}"}
 @app.get('/getallmodelnames')# GET # allow all origins all methods.
 async def getallmodelnames():
         try:
-            filenames = caesarcrud.get_data(("filename",),table)
+            filenames = caesarcrud.get_data(("filename",),"caesaraiworldmodels")
             if filenames:
                 return {"modelnames":filenames}
             else:
@@ -94,36 +72,58 @@ async def getallmodelnames():
 @app.delete('/deletemodel')# GET # allow all origins all methods.
 async def deletemodel(filename):
         try:
-            condition = f"filename = '{filename}'"
-            model_exists = caesarcrud.check_exists(("*"),table,condition)
-            if model_exists:
-                res = caesarcrud.delete_data(table,condition)
-                if res:
-                        return {"meesage":"model was deleted."}
-                else:
-                        return {"error":"error when deleting"}
-            else:
-                return {"error":"model doesn't exist."}
+            return caesaraimodelcrud.deletemodel("caesaraiworldmodels",filename)
         except Exception as ex:
             return {"error":f"{type(ex)},{ex}"}
 @app.put('/updatemodel')# GET # allow all origins all methods.
 async def updatemodel(filename=Form(...),file: UploadFile = File(...)):
     try:
-        newfilename = file.filename
-        modelbytes = await file.read()
-        modelhex = modelbytes.hex().encode()
-        condition = f"filename = '{filename}'"
-        model_exists = caesarcrud.check_exists(("*"),table,condition)
-        if model_exists:
-            res = caesarcrud.update_data(("filename",),(newfilename,),table,condition=condition)
-            res = caesarcrud.update_blob("model",modelhex,table,condition=condition)
-            if res:
-                 return {"message":"model was updated."}
-            else:
-                return {"error":"error updating."}
+
+        return caesaraimodelcrud.updatemodel("caesaraiworldmodels",filename,file)    
+
+    except Exception as ex:
+        return {"error":f"{type(ex)},{ex}"}
+    
+@app.post('/postarmodel')# GET # allow all origins all methods.
+async def postarmodel(file: UploadFile = File(...)):
+    try:
+        if "obj" in file.filename:
+            return caesaraimodelcrud.postmodel("caesaraiarmodels",file)
         else:
-            return {"message":"model does not exists."}
-            
+             return {"message":"file needs to be a .obj file."}
+    except Exception as ex:
+        return {"error":f"{type(ex)},{ex}"}
+
+
+@app.get('/getarmodel')# GET # allow all origins all methods.
+async def getarmodel(filename):
+        try:
+            return caesaraimodelcrud.getmodel("caesaraiarmodels",filename)
+  
+        except Exception as ex:
+            return {"error":f"{type(ex)},{ex}"}
+@app.get('/getallarmodelnames')# GET # allow all origins all methods.
+async def getallarmodelnames():
+        try:
+            filenames = caesarcrud.get_data(("filename",),"caesaraiarmodels")
+            if filenames:
+                return {"modelnames":filenames}
+            else:
+                return {"error":"no models exist"}
+                 
+        except Exception as ex:
+            return {"error":f"{type(ex)},{ex}"}
+@app.delete('/deletearmodel')# GET # allow all origins all methods.
+async def deletearmodel(filename):
+        try:
+            return caesaraimodelcrud.deletemodel("caesaraiarmodels",filename)
+        except Exception as ex:
+            return {"error":f"{type(ex)},{ex}"}
+@app.put('/updatearmodel')# GET # allow all origins all methods.
+async def updatearmodel(filename=Form(...),file: UploadFile = File(...)):
+    try:
+
+        return caesaraimodelcrud.updatemodel("caesaraiarmodels",filename,file)    
 
     except Exception as ex:
         return {"error":f"{type(ex)},{ex}"}
