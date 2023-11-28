@@ -142,9 +142,9 @@ async def createqrcode(data : JSONStructure = None):
 
         light = data.get("light") if data.get("light") else "white"
         dark = data.get("dark") if data.get("dark") else "black"
-        
+
         imgstream = io.BytesIO()
-        video = segno.make('Up Jumped the Devil')
+        video = segno.make(url)
         video.save(imgstream, kind="png", dark=dark, light=light, scale=box_size)
         imgstream.seek(0)
         imgbytes = imgstream.read()
