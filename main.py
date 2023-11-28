@@ -148,9 +148,10 @@ async def createqrcode(data : JSONStructure = None):
 
         # Make the QR code
         qr.make(fit=True)
-
+        back_color = data.get("back_color") if data.get("back_color") else "white"
+        fill_color = data.get("fill_color") if data.get("fill_color") else "black"
         # Create an image from the QR code with a black fill color and white background
-        img = qr.make_image(fill_color="black", back_color="white")
+        img = qr.make_image(fill_color=fill_color, back_color=back_color)
         imgstream = io.BytesIO()
         # Save the QR code image    
         img.save(imgstream)
