@@ -2,6 +2,7 @@ import os
 import io
 import json
 import base64
+import segno
 import hashlib
 import asyncio 
 import uvicorn
@@ -134,27 +135,17 @@ async def createqrcode(data : JSONStructure = None):
         if data.get("help"):
             return {"url":"<url>","version":3,"box_size":10,"border":10,"usebase64":"true"}
         url = data["url"]
-        version = data.get("version") if data.get("version") else 3
         box_size = data.get("box_size") if data.get("box_size") else 5
-        border = data.get("border") if data.get("border") else 10
-        # Create a QR code object with a larger size and higher error correction
-        qr = qrcode.QRCode(version=version, box_size=box_size, border=border, error_correction=qrcode.constants.ERROR_CORRECT_H)
 
-        # Define the data to be encoded in the QR code
+        # Create a QR code object with a larger size and higher error correction
         
 
-        # Add the data to the QR code object
-        qr.add_data(url)
-
-        # Make the QR code
-        qr.make(fit=True)
-        back_color = data.get("back_color") if data.get("back_color") else "white"
-        fill_color = data.get("fill_color") if data.get("fill_color") else "black"
-        # Create an image from the QR code with a black fill color and white background
-        img = qr.make_image(fill_color=fill_color, back_color=back_color)
+        light = data.get("light") if data.get("light") else "white"
+        dark = data.get("dark") if data.get("dark") else "black"
+        
         imgstream = io.BytesIO()
-        # Save the QR code image    
-        img.save(imgstream)
+        video = segno.make('Up Jumped the Devil')
+        video.save(imgstream, kind="png", dark=dark, light=light, scale=box_size)
         imgstream.seek(0)
         imgbytes = imgstream.read()
         if data.get("usebase64"):
@@ -170,6 +161,8 @@ async def createqrcode(data : JSONStructure = None):
 
 
 if __name__ == "__main__":
+    #video = segno.make('https://www.youtube.com/channel/UCNhFxpk6hGt5uMCKXq0Jl8A')
+    #video.save('Video.png', dark="yellow", light="#323524", scale=5)
     uvicorn.run("main:app",port=8080,log_level="info")
     #uvicorn.run()
     #asyncio.run(main())
