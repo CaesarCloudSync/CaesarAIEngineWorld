@@ -38,7 +38,7 @@ class CaesarAIModelCRUD:
         if model_exists:
             res = self.caesarcrud.delete_data(table,condition)
             if res:
-                    return {"meesage":"model was deleted."}
+                    return {"message":"model was deleted."}
             else:
                     return {"error":"error when deleting"}
         else:

@@ -58,7 +58,7 @@ async def getmodel(filename):
             return caesaraimodelcrud.getmodel("caesaraiworldmodels",filename)
   
         except Exception as ex:
-            return {"error":f"{type(ex)},{ex}"}
+            return {"error":f"{type(ex)},{ex}"},400
 @app.get('/getallmodelnames')# GET # allow all origins all methods.
 async def getallmodelnames():
         try:
