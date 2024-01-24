@@ -1,5 +1,5 @@
 git add .
-git commit -m "model,images and all files can be stored"
+git commit -m "$1"
 git push origin -f main:main
 docker build -t palondomus/caesaraiengineworld:latest .
 docker push palondomus/caesaraiengineworld:latest
